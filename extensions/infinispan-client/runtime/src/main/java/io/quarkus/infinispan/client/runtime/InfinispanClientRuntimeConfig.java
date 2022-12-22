@@ -21,10 +21,31 @@ import io.quarkus.runtime.annotations.ConfigRoot;
 @ConfigRoot(name = "infinispan-client", phase = ConfigPhase.RUN_TIME)
 public class InfinispanClientRuntimeConfig {
 
+    // @formatter:off
+    /**
+     * Sets the URI of the running Infinispan server to connect to. hotrod://localhost:11222@admin:password
+     * If provided {@link #hosts}, {@link #username} and {@link #password} will be ignored.
+     */
+    // @formatter:on
+    @ConfigItem
+    public Optional<String> uri;
+
+    // @formatter:off
     /**
      * Sets the host name/port to connect to. Each one is separated by a semicolon (eg. host1:11222;host2:11222).
      */
+    // @formatter:on
     @ConfigItem
+    public Optional<String> hosts;
+
+    // @formatter:off
+    /**
+     * Sets the host name/port to connect to. Each one is separated by a semicolon (eg. host1:11222;host2:11222).
+     * @deprecated {@link #hosts} should be used to configure the list or uri for an uri connection string.
+     */
+    // @formatter:on
+    @ConfigItem
+    @Deprecated
     public Optional<String> serverList;
 
     // @formatter:off
@@ -66,12 +87,30 @@ public class InfinispanClientRuntimeConfig {
      * Sets username used by authentication.
      */
     @ConfigItem
+    Optional<String> username;
+
+    /**
+     * Sets username used by authentication.
+     *
+     * @deprecated {@link #username} should be used to configure the credentials username.
+     */
+    @ConfigItem
+    @Deprecated
     Optional<String> authUsername;
 
     /**
-     * Sets password used by authentication
+     * Sets password used by authentication.
      */
     @ConfigItem
+    Optional<String> password;
+
+    /**
+     * Sets password used by authentication
+     *
+     * @deprecated {@link #password} should be used to configure the credentials password.
+     */
+    @ConfigItem
+    @Deprecated
     Optional<String> authPassword;
 
     /**
