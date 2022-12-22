@@ -180,8 +180,38 @@ public class InfinispanClientProducer {
         }
         InfinispanClientRuntimeConfig infinispanClientRuntimeConfig = this.infinispanClientRuntimeConfig.get();
 
-        if (infinispanClientRuntimeConfig.serverList.isPresent()) {
-            properties.put(ConfigurationProperties.SERVER_LIST, infinispanClientRuntimeConfig.serverList.get());
+        if (infinispanClientRuntimeConfig.uri.isPresent()) {
+            properties.put(ConfigurationProperties.URI, infinispanClientRuntimeConfig.uri.get());
+        } else {
+            if (infinispanClientRuntimeConfig.serverList.isPresent()) {
+                log.warn(
+                        "Use 'quarkus.infinispan-client.hosts' instead of the deprecated 'quarkus.infinispan-client.server-list'");
+                properties.put(ConfigurationProperties.SERVER_LIST, infinispanClientRuntimeConfig.serverList.get());
+            }
+
+            if (infinispanClientRuntimeConfig.hosts.isPresent()) {
+                properties.put(ConfigurationProperties.SERVER_LIST, infinispanClientRuntimeConfig.hosts.get());
+            }
+
+            if (infinispanClientRuntimeConfig.authUsername.isPresent()) {
+                log.warn(
+                        "Use 'quarkus.infinispan-client.username' instead of the deprecated 'quarkus.infinispan-client.auth-username'");
+                properties.put(ConfigurationProperties.AUTH_USERNAME, infinispanClientRuntimeConfig.authUsername.get());
+            }
+
+            if (infinispanClientRuntimeConfig.username.isPresent()) {
+                properties.put(ConfigurationProperties.AUTH_USERNAME, infinispanClientRuntimeConfig.username.get());
+            }
+
+            if (infinispanClientRuntimeConfig.authPassword.isPresent()) {
+                log.warn(
+                        "Use 'quarkus.infinispan-client.password' instead of the deprecated 'quarkus.infinispan-client.auth-password'");
+                properties.put(ConfigurationProperties.AUTH_PASSWORD, infinispanClientRuntimeConfig.authPassword.get());
+            }
+
+            if (infinispanClientRuntimeConfig.password.isPresent()) {
+                properties.put(ConfigurationProperties.AUTH_PASSWORD, infinispanClientRuntimeConfig.password.get());
+            }
         }
 
         if (infinispanClientRuntimeConfig.clientIntelligence.isPresent()) {
@@ -191,21 +221,19 @@ public class InfinispanClientProducer {
         if (infinispanClientRuntimeConfig.useAuth.isPresent()) {
             properties.put(ConfigurationProperties.USE_AUTH, infinispanClientRuntimeConfig.useAuth.get());
         }
-        if (infinispanClientRuntimeConfig.authUsername.isPresent()) {
-            properties.put(ConfigurationProperties.AUTH_USERNAME, infinispanClientRuntimeConfig.authUsername.get());
-        }
-        if (infinispanClientRuntimeConfig.authPassword.isPresent()) {
-            properties.put(ConfigurationProperties.AUTH_PASSWORD, infinispanClientRuntimeConfig.authPassword.get());
-        }
+
         if (infinispanClientRuntimeConfig.authRealm.isPresent()) {
             properties.put(ConfigurationProperties.AUTH_REALM, infinispanClientRuntimeConfig.authRealm.get());
         }
+
         if (infinispanClientRuntimeConfig.authServerName.isPresent()) {
             properties.put(ConfigurationProperties.AUTH_SERVER_NAME, infinispanClientRuntimeConfig.authServerName.get());
         }
+
         if (infinispanClientRuntimeConfig.authClientSubject.isPresent()) {
             properties.put(ConfigurationProperties.AUTH_CLIENT_SUBJECT, infinispanClientRuntimeConfig.authClientSubject.get());
         }
+
         if (infinispanClientRuntimeConfig.authCallbackHandler.isPresent()) {
             properties.put(ConfigurationProperties.AUTH_CALLBACK_HANDLER,
                     infinispanClientRuntimeConfig.authCallbackHandler.get());
