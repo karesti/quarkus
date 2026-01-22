@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.PreDestroy;
@@ -37,6 +38,8 @@ import org.infinispan.protostream.SerializationContextInitializer;
 import org.infinispan.protostream.schema.Schema;
 
 import io.quarkus.arc.Arc;
+import io.quarkus.runtime.BlockingOperationControl;
+import io.vertx.core.Vertx;
 
 /**
  * Produces a configured remote cache manager instance
@@ -146,14 +149,30 @@ public class InfinispanClientProducer {
         }
         // Build de cache manager if the server list is present
         InfinispanClientsRuntimeConfig infinispanClientsRuntimeConfig = this.infinispanClientsRuntimeConfigHandle.get();
+        RemoteCacheManager cacheManager = new RemoteCacheManager(conf.build(), false);
+        if (BlockingOperationControl.isBlockingAllowed()) {
+            startBlocking(infinispanConfigName, properties, infinispanClientsRuntimeConfig, cacheManager);
+            return;
+        }
 
-        RemoteCacheManager cacheManager = new RemoteCacheManager(conf.build(),
-                infinispanClientsRuntimeConfig.startClient().orElse(Boolean.TRUE));
-        remoteCacheManagers.put(infinispanConfigName, cacheManager);
+        Vertx.currentContext().executeBlocking(new Callable<RemoteCacheManager>() {
+            @Override
+            public RemoteCacheManager call() throws Exception {
+                return startBlocking(infinispanConfigName, properties, infinispanClientsRuntimeConfig, cacheManager);
+            }
+        }).toCompletionStage().toCompletableFuture().join();
+    }
 
+    private RemoteCacheManager startBlocking(String infinispanConfigName, Map<String, Properties> properties,
+            InfinispanClientsRuntimeConfig infinispanClientsRuntimeConfig, RemoteCacheManager cacheManager) {
+        if (infinispanClientsRuntimeConfig.startClient().orElse(Boolean.TRUE)) {
+            cacheManager.start();
+        }
         if (infinispanClientsRuntimeConfig.useSchemaRegistration().orElse(Boolean.TRUE)) {
             registerSchemaInServer(infinispanConfigName, properties, cacheManager);
         }
+        remoteCacheManagers.put(infinispanConfigName, cacheManager);
+        return cacheManager;
     }
 
     /**
